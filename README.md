@@ -10,105 +10,111 @@ This project implements a logistic regression model from scratch to predict the 
 - `heart_disease_test.csv`: Testing dataset  
 - `logistic_regression.ipynb`: Jupyter notebook with full code, training logic, and evaluation  
 
----
-
 ## 🩺 Dataset Overview
 
-Based on the Framingham Heart Study, the dataset includes features such as:
-- `age`, `gender`, `BMI`, `glucose`, `heartRate`, `BPMeds`, `cigsPerDay`, etc.  
-- **Target variable:** `TenYearCHD` (0 = no CHD, 1 = CHD)
+Sourced from the **Framingham Heart Study**, the dataset contains:
+- **Features**: age, gender, BMI, glucose, heartRate, cigsPerDay, cholesterol, BPMeds, etc.
+- **Target variable**: `TenYearCHD` (1 = CHD present within 10 years, 0 = absent)
 
 ---
 
-## 🔍 Workflow Summary
+## 🔄 Data Preprocessing
 
-### 1. Data Preprocessing
-- Loaded and examined missing values in features like `glucose`, `BMI`, `cholesterol`, etc.
-- Imputed missing values using **group-based strategies**.
-- Removed the `education` column due to irrelevance.
-- Categorical values such as `BPMeds` were cast from float to int.
+### Missing Value Imputation:
+Used medically-informed group-based imputation strategies:
+- **Glucose**: by `diabetes` and `gender`
+- **BMI**: by `age group`, `gender`, `hypertension`, `diabetes`
+- **Cholesterol**: by `gender` and `hypertension`
+- **BPMeds**: by `systolic BP` category, `age`, `hypertension`
+- **Heart Rate**: by `age group`, `gender`, `BMI group`
+- **CigsPerDay**: 0 for non-smokers, grouped imputation for smokers
 
-### 2. Normalization
-- All continuous variables normalized using **Z-score standardization**:  
-z = (x - mean) / std
-- Binary categorical variables retained in 0/1 format.
+> ✅ All missing values were filled using fallback strategies  
+> ❌ `education` was dropped as it's not directly clinically relevant
 
-### 3. Class Imbalance Handling
-- Significant class imbalance observed (~15% CHD).
-- Used **undersampling** of the majority class for balanced learning.
+### Normalization:
+- Applied **Z-score normalization** to continuous features:  
+  \[
+  z = \frac{x - \mu}{\sigma}
+  \]
+- Binary categorical variables were left untouched (0/1 format)
 
 ---
 
-## 🧠 Model Architecture
+## ⚖️ Class Imbalance Handling
 
-### Base Model (Logistic Regression from Scratch)
-- Used sigmoid activation:  
-sigmoid(z) = 1 / (1 + e^-z)
+- The dataset was highly imbalanced (~15% positive class)
+- Applied **undersampling** to the majority class with variable ratios (0.2, 0.3, 0.4)
 
+---
+
+## 🧠 Base Model: Logistic Regression
+
+### Architecture:
+- Activation: **Sigmoid**
 - Loss: **Binary Cross-Entropy**
-- Optimization: **Batch Gradient Descent**
+- Optimization: **Full-batch Gradient Descent**
+- Bias term: added manually to input features
+- Weight Initialization: He initialization
 
-### Parameters
-- Learning Rate: 0.2  
-- Epochs: 50
-
----
-
-## 📊 Comprehensive Model Comparison
-
-### 🔹 Base Model Metrics
-
-**Training Set:**
-- **Confusion Matrix:**  
-  `[[2546  328], [ 382  134]]`
-- **Accuracy:** 79.06%
-- **Precision:** 29.00% – Of predicted positive cases, 29.00% were correct.
-- **Recall:** 25.97% – The model identified only 25.97% of actual positive cases (CHD).
-- **F1 Score:** 27.40% – Indicates poor balance between precision and recall, highlighting the challenge of identifying the positive class.
-- **AUC:** 0.6437 – Moderate ability to distinguish between classes, but still underperforming.
-
-**Test Set:**
-- **Confusion Matrix:**  
-  `[[624  96], [101  27]]`
-- **Accuracy:** 76.77%
-- **Precision:** 21.95% – Of predicted positive cases, only 21.95% were correct.
-- **Recall:** 21.09% – Identified just 21.09% of actual positive cases.
-- **F1 Score:** 21.51% – Consistent with training, showing the model’s struggle with classifying the minority class.
-- **AUC:** 0.6512 – Slightly above random guessing, indicating limited class separation.
+### Base Hyperparameters:
+- Learning Rate: `0.2`  
+- Epochs: `20`  
+- Sampling Ratio: `0.3`
 
 ---
 
-### 🔹 Best Model Metrics (After Hyperparameter Tuning)
+## 📊 Base Model Performance
 
-**Training Set:**
-- **Confusion Matrix:**  
-  `[[2593  281], [ 358  158]]`
-- **Accuracy:** 81.15%
-- **Precision:** 35.99% – Improved from the base model, though still affected by false positives.
-- **Recall:** 30.62% – Significant gain in detecting CHD-positive cases.
-- **F1 Score:** 33.09% – Improved balance between precision and recall.
-- **AUC:** 0.7238 – Better ability to distinguish between positive and negative classes.
+### Training Set:
+- Accuracy: **79.06%**
+- Precision: **29.00%**
+- Recall: **25.97%**
+- F1 Score: **27.40%**
+- AUC: **0.644**
 
-**Test Set:**
-- **Confusion Matrix:**  
-  `[[656  64], [85  43]]`
-- **Accuracy:** 82.43%
-- **Precision:** 40.19% – More correct CHD predictions than the base model.
-- **Recall:** 33.59% – Further recall improvement, critical in medical diagnostics.
-- **F1 Score:** 36.60% – Clear improvement in model’s positive class prediction performance.
-- **AUC:** 0.7648 – Stronger generalization and separation between CHD and non-CHD.
+### Test Set:
+- Accuracy: **76.77%**
+- Precision: **21.95%**
+- Recall: **21.09%**
+- F1 Score: **21.51%**
+- AUC: **0.651**
+
+> 🚨 The base model struggles with detecting CHD (low recall & F1)
 
 ---
 
-## 🧠 Interpretation
+## 🔧 Model Tuning: Grid Search + Mini-Batch Gradient Descent
 
-- ✅ **Best model outperforms** the base model on all metrics: recall, F1 score, and AUC.
-- 📈 The recall and F1 score improvements reflect the model’s better ability to identify CHD-positive cases.
-- 🎯 While precision slightly decreased, **higher recall is prioritized** in medical risk predictions.
-- 🔄 **Consistent metrics across train and test** sets show good generalization and minimal overfitting.
-- 📊 **AUC increased** from 0.6437 → 0.7648, confirming better class separation.
+### Optimization Technique:
+- **Mini-batch Gradient Descent**
+- Convergence tracked via cost difference
+- Bias manually included
+
+### Grid Search Parameters:
+| Hyperparameter     | Values                         |
+|--------------------|--------------------------------|
+| Learning Rate       | `[0.01, 0.05, 0.1]`             |
+| Batch Size          | `[32, 64, 128]`                |
+| Epochs              | `[500, 1000, 2000]`            |
+| Sampling Ratio      | `[0.2, 0.3, 0.4]`              |
+
+> 🔎 **81 total combinations** evaluated
 
 ---
+
+## 🏆 Best Model Performance (After Tuning)
+
+**Test Set Results:**
+- Accuracy: **84.43%**
+- Precision: **47.37%**
+- Recall: **28.12%**
+- F1 Score: **35.29%**
+- AUC: **0.765**
+
+> ✅ Significant boost in F1 and AUC  
+> ✅ Recall improved — critical for medical risk identification
+
 
 ## 🩺 Conclusion
 
@@ -117,16 +123,47 @@ sigmoid(z) = 1 / (1 + e^-z)
 
 ---
 
-## 📌 Recommendations for Further Improvement
+## 📈 Visualizations
 
-- Use **SMOTE** to synthetically oversample minority class.
-- Add **L1/L2 regularization** to reduce variance.
-- Experiment with **tree-based models** (e.g., Random Forest, XGBoost).
-- Explore **cost-sensitive learning** to further optimize recall-precision trade-offs.
+- 📉 Cost vs Epoch curve
+- 📊 ROC Curve for Train and Test sets
+- 📐 AUC computed using trapezoidal integration
 
 ---
 
-## 🔗 Acknowledgments
+## ⚙️ Techniques Implemented
 
-- **Dataset**: Framingham Heart Study
-- **Modeling Decisions**: Guided by cardiovascular risk prediction literature and domain best practices.
+- Manual implementation of:
+  - Sigmoid
+  - Binary cross-entropy loss
+  - Gradient computation
+  - ROC curve and AUC
+- Mini-batch gradient descent with early stopping
+- Undersampling-based resampling strategy
+- Grid search for 4 hyperparameters
+
+---
+
+## 🚀 Recommendations for Future Work
+
+- Apply **SMOTE** for synthetic oversampling
+- Add **L1/L2 regularization** to reduce overfitting
+- Try ensemble methods like **Random Forest**, **XGBoost**
+- Implement **cost-sensitive learning**
+- Introduce model explainability using **SHAP/LIME**
+
+---
+
+## 📚 References
+
+- Dataset: [Framingham Heart Study](https://www.nhlbi.nih.gov/science/cardiovascular-health-study-chs)
+- Research-guided imputation strategies:  
+  - https://academic.oup.com/aje/article-abstract/157/1/74/66183  
+  - https://www.sciencedirect.com/science/article/pii/S1443950616315311
+
+---
+
+## 🧠 Author Notes
+
+This project is intended for educational purposes and demonstrates how interpretable and accurate models can be built using fundamental ML concepts, even without relying on high-level libraries like `scikit-learn`.
+
