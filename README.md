@@ -8,7 +8,7 @@ This project implements a logistic regression model from scratch to predict the 
 
 - `heart_disease_train.csv`: Training dataset  
 - `heart_disease_test.csv`: Testing dataset  
-- `logistic_regression.ipynb`: Jupyter notebook with full code, training logic, and evaluation  
+- `heart_disease_logistic_regression.ipynb`: Jupyter notebook with full code, training logic, and evaluation  
 
 ## 🩺 Dataset Overview
 
