@@ -54,37 +54,6 @@ sigmoid(z) = 1 / (1 + e^-z)
 
 ---
 
-## 📊 Base Model Performance
-
-| Metric        | Training Set | Test Set |
-|---------------|--------------|----------|
-| Accuracy      | 84.54%       | 84.55%   |
-| Precision     | 45.45%       | 43.48%   |
-| Recall        | 7.75%        | 7.81%    |
-| F1 Score      | 13.25%       | 13.25%   |
-| AUC Score     | 0.640        | 0.658    |
-
-> 🔎 **Observation:** High accuracy but **very poor recall**, indicating that the base model struggles to identify true CHD cases.
-
----
-
-## 🔧 Model Improvement: Hyperparameter Tuning
-
-### Techniques Applied:
-- **Mini-batch gradient descent**
-- **Undersampling** to balance dataset
-- **Grid search** over:
-- Learning rates: `[0.01, 0.05, 0.1]`
-- Batch sizes: `[32, 64, 128]`
-- Epochs: `[500, 1000, 2000]`
-- Sampling ratios: `[0.2, 0.3, 0.4]`
-
-### ✅ Best Hyperparameters:
-- learning_rate: 0.01,
-- batch_size: 32,
-- epochs: 2000
-- sampling_ratio: 0.4
-
 ## 📊 Comprehensive Model Comparison
 
 ### 🔹 Base Model Metrics
